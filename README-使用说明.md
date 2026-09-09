@@ -16,8 +16,6 @@
 
 ### 方式 B：部署到 Netlify（API Key 藏在服务端）
 
-你有 Netlify 前端部署 + Netlify Function 经验，这套结构和 StepForward 项目一致：
-
 1. 整个文件夹作为站点根目录部署（`netlify.toml` 已配置 `publish = "."`，functions 目录为 `netlify/functions`）
 2. 在 **Site settings → Environment variables** 设置对应服务商的 Key（按需其一）：
    - `DEEPSEEK_API_KEY` / `MINIMAX_API_KEY` / `OPENAI_API_KEY` / `ZHIPU_API_KEY` / `QWEN_API_KEY` / `ANTHROPIC_API_KEY`
@@ -26,7 +24,7 @@
 
 代理函数：`netlify/functions/llm-proxy.js`，支持流式（SSE 透传）与 JSON 两种调用。
 
-## 二、演示脚本（5 分钟讲完整个机制）
+## 二、演示方案（5 分钟讲完整个机制）
 
 | 步骤 | 操作 | 观察点 |
 |---|---|---|
@@ -52,7 +50,7 @@
 | 不确定性兜底 | 开场生成失败走模板层；记忆轮失败保留原文并记录 |
 | 成本账 | 右侧累计 token 估算（粗略，标注假设） |
 
-## 四、诚实声明（演示级简化）
+## 四、声明（演示级简化）
 
 - 击穿拦截是**关键词级**检测，真实产品应使用分类器 + 内容安全审核接口（题面已提供）
 - 记忆库用 localStorage 模拟（真实产品为服务端存储 + HITL 抽检队列）
