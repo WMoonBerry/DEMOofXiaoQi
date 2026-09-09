@@ -1,0 +1,98 @@
+/* ============================================================
+   小栖 · 皮肤层 skins.css（新增文件，不改动核心代码）
+   三款皮肤：
+     moon  夜晚看月亮（默认，:root 原样，无需覆盖）
+     taro  香芋奶油 · 温馨（香芋紫 + 奶油米白）
+     sage  陶土鼠尾草 · 知心陪伴（陶土橙 + 鼠尾草绿）
+   覆盖三类目标：① :root 变量 ② index.html 内联样式中的硬编码色
+   ③ app.js 动态生成的内联色（用属性选择器 + !important，不改 js）
+   ============================================================ */
+
+/* ---------- 换肤过渡 ---------- */
+body, header, .side, .chat-col, .input-area, .level-switch,
+.msg, .state-box, .event-card, .tbtn, textarea, .send {
+  transition: background-color .3s ease, border-color .3s ease, color .3s ease;
+}
+
+/* ============================================================
+   皮肤一：香芋奶油 · 温馨（taro）
+   ============================================================ */
+[data-skin="taro"] {
+  --bg: #f6f1e9; --panel: #f1ead9; --card: #ffffff; --border: #e3d9ee;
+  --text: #463d52; --muted: #9c91a8; --accent: #a07fd0; --accent2: #b49ae0;
+  --green: #4f9e4f; --red: #c9576a; --yellow: #a87818;
+}
+[data-skin="taro"] .avatar { background: linear-gradient(135deg,#c3aae6,#a07fd0); }
+[data-skin="taro"] .msg.user { background: #e6dcf5; color: #463d52; }
+[data-skin="taro"] .sys { background: rgba(70,61,82,0.05); }
+[data-skin="taro"] .send { color: #ffffff; }
+[data-skin="taro"] .lv1 { background:#e4f1e4; color:#4f9e4f; }
+[data-skin="taro"] .lv2 { background:#f7eed3; color:#a87818; }
+[data-skin="taro"] .lv3 { background:#ece4f8; color:#8a6fc4; }
+[data-skin="taro"] .lv4 { background:#f8e2e4; color:#c9576a; }
+[data-skin="taro"] .lv-btn.active { background: rgba(160,127,208,0.10); }
+[data-skin="taro"] .tag { background:#f0eaf9; border-color:#c3aae6; color:#6b5595; }
+[data-skin="taro"] .event-card { border-color:#c3aae6; }
+[data-skin="taro"] .event-card .eid { color:#8a6fc4; }
+[data-skin="taro"] .rel-fill { background: linear-gradient(90deg,#a07fd0,#d9c7f0); }
+[data-skin="taro"] .rel-bar { background:#eee8f6; }
+[data-skin="taro"] .side h3 { color:#8a6fc4; }
+[data-skin="taro"] ::-webkit-scrollbar-thumb { background:#ddd2ea; }
+/* app.js 动态内联色 → 浅底可读版 */
+[data-skin="taro"] [style*="#e8eaf2"] { color:#463d52 !important; }
+[data-skin="taro"] [style*="#ffd35a"] { color:#a87818 !important; }
+[data-skin="taro"] [style*="#7dd87d"] { color:#4f9e4f !important; }
+[data-skin="taro"] [style*="#5aa9ff"] { color:#8a6fc4 !important; }
+[data-skin="taro"] [style*="#8b93a7"] { color:#9c91a8 !important; }
+
+/* ============================================================
+   皮肤二：陶土鼠尾草 · 知心陪伴（sage）
+   ============================================================ */
+[data-skin="sage"] {
+  --bg: #f3f0e8; --panel: #ece7d8; --card: #ffffff; --border: #ddd5c2;
+  --text: #45402f; --muted: #94896f; --accent: #c96f4a; --accent2: #8ba888;
+  --green: #5c8a58; --red: #c0574f; --yellow: #a87818;
+}
+[data-skin="sage"] .avatar { background: linear-gradient(135deg,#c96f4a,#8ba888); }
+[data-skin="sage"] .msg.user { background: #dfe8d7; color: #45402f; }
+[data-skin="sage"] .sys { background: rgba(69,64,47,0.05); }
+[data-skin="sage"] .send { color: #ffffff; }
+[data-skin="sage"] .lv1 { background:#e3eee0; color:#5c8a58; }
+[data-skin="sage"] .lv2 { background:#f5ecd2; color:#a87818; }
+[data-skin="sage"] .lv3 { background:#f0e3da; color:#c96f4a; }
+[data-skin="sage"] .lv4 { background:#f6dfdb; color:#c0574f; }
+[data-skin="sage"] .lv-btn.active { background: rgba(139,168,136,0.12); }
+[data-skin="sage"] .tag { background:#eef2e7; border-color:#8ba888; color:#5c7355; }
+[data-skin="sage"] .event-card { border-color:#8ba888; }
+[data-skin="sage"] .event-card .eid { color:#6b8a68; }
+[data-skin="sage"] .rel-fill { background: linear-gradient(90deg,#c96f4a,#8ba888); }
+[data-skin="sage"] .rel-bar { background:#e9e3d2; }
+[data-skin="sage"] .side h3 { color:#b05f3d; }
+[data-skin="sage"] ::-webkit-scrollbar-thumb { background:#d8d0ba; }
+/* app.js 动态内联色 → 浅底可读版 */
+[data-skin="sage"] [style*="#e8eaf2"] { color:#45402f !important; }
+[data-skin="sage"] [style*="#ffd35a"] { color:#a87818 !important; }
+[data-skin="sage"] [style*="#7dd87d"] { color:#5c8a58 !important; }
+[data-skin="sage"] [style*="#5aa9ff"] { color:#6b8a68 !important; }
+[data-skin="sage"] [style*="#8b93a7"] { color:#94896f !important; }
+
+/* ============================================================
+   皮肤切换入口（右上角按钮 + 下拉菜单，由 js/skin.js 注入）
+   ============================================================ */
+.skin-wrap { position: relative; }
+.skin-menu {
+  display: none; position: absolute; right: 0; top: calc(100% + 8px); z-index: 200;
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 6px; width: 230px; box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
+.skin-menu.open { display: block; animation: fadein .18s ease; }
+.skin-opt {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  background: transparent; border: 1px solid transparent; border-radius: 9px;
+  padding: 9px 10px; cursor: pointer; text-align: left; color: var(--text);
+}
+.skin-opt:hover { background: var(--panel); }
+.skin-opt.active { border-color: var(--accent); }
+.skin-opt .e { font-size: 18px; }
+.skin-opt .n { font-size: 13px; font-weight: 600; flex: 1; }
+.skin-opt .d { font-size: 10.5px; color: var(--muted); }

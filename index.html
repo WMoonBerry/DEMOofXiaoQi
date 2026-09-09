@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小栖 · 陪伴对话 Demo（已接入API）</title>
+<style>
+  :root {
+    --bg: #16182a; --panel: #1e2136; --card: #262a44; --border: #34395e;
+    --text: #e8eaf2; --muted: #8b93a7; --accent: #ff8c5a; --accent2: #5aa9ff;
+    --green: #7dd87d; --red: #ff5a6e; --yellow: #ffd35a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:"PingFang SC","Microsoft YaHei",sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+  header { padding:12px 20px; background:var(--panel); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .avatar { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#ff8c5a,#c58bff); display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .name { font-weight:600; font-size:16px; }
+  .status { font-size:12px; color:var(--green); }
+  .toolbar { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; }
+  .tbtn { background:var(--card); border:1px solid var(--border); color:var(--text); padding:7px 14px; border-radius:10px; cursor:pointer; font-size:12.5px; transition:all .15s; }
+  .tbtn:hover { border-color:var(--accent); }
+  .tbtn.primary { border-color:var(--accent); color:var(--accent); }
+  .tbtn.danger { border-color:var(--red); color:var(--red); }
+  .tbtn:disabled { opacity:.45; cursor:not-allowed; }
+
+  main { flex:1; display:flex; overflow:hidden; }
+  .chat-col { flex:1; display:flex; flex-direction:column; min-width:0; }
+
+  .level-switch { padding:10px 20px; background:var(--panel); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .level-switch .lbl { font-size:12px; color:var(--muted); }
+  .lv-btn { background:var(--card); border:1px solid var(--border); color:var(--muted); padding:6px 14px; border-radius:18px; cursor:pointer; font-size:12.5px; transition:all .15s; }
+  .lv-btn.active { border-color:var(--green); color:var(--green); background:rgba(125,216,125,0.08); }
+  .level-switch .hint { font-size:11px; color:var(--muted); }
+
+  .chat { flex:1; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:14px; }
+  .msg { max-width:70%; padding:12px 16px; border-radius:16px; font-size:14px; line-height:1.7; white-space:pre-wrap; word-break:break-word; }
+  .msg.ai { background:var(--card); border:1px solid var(--border); border-top-left-radius:4px; align-self:flex-start; }
+  .msg.user { background:#2f5a3f; border-top-right-radius:4px; align-self:flex-end; }
+  .sys { align-self:center; font-size:12px; color:var(--muted); background:rgba(255,255,255,0.04); padding:4px 14px; border-radius:12px; text-align:center; }
+  .typing { color:var(--muted); font-size:12px; align-self:flex-start; padding:4px 12px; }
+
+  .input-area { padding:12px 20px 14px; background:var(--panel); border-top:1px solid var(--border); }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .chip { background:transparent; border:1px dashed var(--border); color:var(--muted); padding:5px 12px; border-radius:14px; cursor:pointer; font-size:12px; transition:all .15s; }
+  .chip:hover { border-color:var(--accent); color:var(--accent); }
+  .input-row { display:flex; gap:10px; align-items:flex-end; }
+  textarea { flex:1; background:var(--card); border:1px solid var(--border); color:var(--text); border-radius:12px; padding:11px 14px; font-size:14px; font-family:inherit; resize:none; min-height:44px; max-height:140px; outline:none; }
+  textarea:focus { border-color:var(--accent); }
+  .send { background:var(--accent); border:none; color:#1a1208; font-weight:600; padding:11px 22px; border-radius:12px; cursor:pointer; font-size:14px; }
+  .send:disabled { opacity:.5; cursor:not-allowed; }
+  .meta-note { font-size:11px; color:var(--muted); margin-top:8px; line-height:1.6; }
+
+  .side { width:360px; border-left:1px solid var(--border); background:var(--panel); overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .side h3 { font-size:13px; color:var(--yellow); font-weight:600; }
+  .state-box { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; font-size:12.5px; line-height:1.8; color:var(--muted); }
+  .state-box b { color:var(--text); font-weight:600; }
+  .lv { display:inline-block; padding:1px 8px; border-radius:8px; font-size:11px; font-weight:600; }
+  .lv1 { background:#1e3a2a; color:var(--green); } .lv2 { background:#3a2e1e; color:var(--yellow); }
+  .lv3 { background:#2a2440; color:#c58bff; } .lv4 { background:#3d2229; color:var(--red); }
+
+  .event-card { position:relative; background:var(--card); border:1px solid var(--accent2); border-radius:10px; padding:12px; font-size:12px; line-height:1.7; animation:cardIn .5s ease; }
+  @keyframes cardIn { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:none;} }
+  .event-card .eid { color:var(--accent2); font-weight:600; }
+  .card-del { position:absolute; top:6px; right:6px; background:transparent; border:none; color:var(--muted); font-size:16px; cursor:pointer; line-height:1; padding:2px 6px; border-radius:6px; }
+  .card-del:hover { color:var(--red); background:rgba(255,90,110,0.1); }
+
+  .tag { display:inline-block; background:#2f3a4d; border:1px solid var(--accent2); color:#bcd8ff; font-size:11px; padding:2px 10px; border-radius:12px; margin:2px 4px 2px 0; }
+
+  .rel-state { display:flex; align-items:center; gap:8px; }
+  .rel-bar { flex:1; height:6px; background:var(--card); border-radius:3px; overflow:hidden; }
+  .rel-fill { height:100%; background:linear-gradient(90deg,#ff8c5a,#ffd35a); width:10%; transition:width 1s ease; }
+
+  #memoryLog { font-size:11px; color:var(--muted); line-height:1.8; max-height:120px; overflow-y:auto; }
+
+  .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100; align-items:center; justify-content:center; }
+  .modal-box { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:24px; width:420px; max-width:92vw; }
+  .modal-box h2 { font-size:16px; margin-bottom:6px; }
+  .modal-box .mode { font-size:12px; color:var(--accent2); margin-bottom:16px; }
+  .field { margin-bottom:14px; }
+  .field label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+  .field select, .field input { width:100%; background:var(--card); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:9px 12px; font-size:13px; outline:none; }
+  .field input:focus, .field select:focus { border-color:var(--accent); }
+  .modal-actions { display:flex; gap:10px; margin-top:18px; }
+  .modal-actions .send { flex:1; }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); padding:10px 18px; border-radius:12px; cursor:pointer; font-size:13px; }
+  #settingsStatus { font-size:12px; margin-top:12px; min-height:16px; }
+
+  ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+  .fadein { animation:fadein .4s ease; }
+  @keyframes fadein { from { opacity:0; } to { opacity:1; } }
+
+  @media (max-width: 900px) {
+    main { flex-direction:column; overflow-y:auto; }
+    .side { width:100%; border-left:none; border-top:1px solid var(--border); }
+    .chat { min-height:50vh; }
+    .msg { max-width:85%; }
+  }
+</style>
+<link rel="stylesheet" href="skins.css">
+</head>
+<body>
+
+<header>
+  <div class="avatar">🌙</div>
+  <div>
+    <div class="name">小栖</div>
+    <div class="status" id="onlineStatus">在线 · 已接入真实大模型</div>
+  </div>
+  <div class="toolbar">
+    <button class="tbtn primary" id="memBtn">⏹ 结束对话 · 记忆轮</button>
+    <button class="tbtn" id="newDayBtn">🌅 新的一天</button>
+    <button class="tbtn" id="clearMemBtn">🗑 清空全部记忆</button>
+    <button class="tbtn" id="settingsBtn">⚙ API 设置</button>
+  </div>
+</header>
+
+<main>
+  <div class="chat-col">
+    <div class="level-switch">
+      <span class="lbl">响应级别（用户主权 · 随时切换）：</span>
+      <button class="lv-btn active" data-lv="L1">L1 倾听</button>
+      <button class="lv-btn" data-lv="L2">L2 安抚</button>
+      <button class="lv-btn" data-lv="L3">L3 建议</button>
+      <span class="hint">L4 干预由危机信号自动触发，不可手选</span>
+    </div>
+
+    <div class="chat" id="chat"></div>
+
+    <div class="input-area">
+      <div class="chips">
+        <button class="chip">今天面试又挂了，第三次了，有点撑不住</button>
+        <button class="chip">只想说说，别给建议</button>
+        <button class="chip">你还记得我上次说的事吗</button>
+        <button class="chip">陪我说说话</button>
+      </div>
+      <div class="input-row">
+        <textarea id="input" placeholder="想说什么就说什么…（自由输入，这是与预制剧本版 Demo 的核心区别）" rows="1"></textarea>
+        <button class="send" id="sendBtn">发送</button>
+      </div>
+      <div class="meta-note">演示机制：① 每轮注入人设锚+事件卡片 ② 四级响应路由（上方切换）③ 八种击穿模式自动拦截重写 ④ 「结束对话·记忆轮」异步提取事件卡片 ⑤ 「新的一天」体验记忆被主动引用 ⑥ 记忆卡片可删除（反向链路）</div>
+    </div>
+  </div>
+
+  <aside class="side">
+    <h3>⚙️ 本次调用注入（系统内部视角）</h3>
+    <div class="state-box" id="injectionView">待加载…</div>
+
+    <h3>🛡️ 安全系统</h3>
+    <div class="state-box" id="safetyView">待加载…</div>
+
+    <h3>🧠 记忆墙（事件卡片 · 记忆轮产出）</h3>
+    <div id="memWall" style="display:flex; flex-direction:column; gap:8px;"></div>
+
+    <h3>🏷️ 画像标签</h3>
+    <div class="state-box" id="tagWall">（暂无）</div>
+
+    <h3>💗 关系状态</h3>
+    <div class="state-box">
+      <div class="rel-state"><span id="relLabel" style="font-size:12px;">初识</span><div class="rel-bar"><div class="rel-fill" id="relFill"></div></div></div>
+      <div style="margin-top:6px; font-size:11px;" id="relNote">待跟进事项：无</div>
+    </div>
+
+    <h3>💰 成本估算</h3>
+    <div class="state-box" id="costView">（尚未调用）</div>
+
+    <h3>📋 记忆轮日志</h3>
+    <div class="state-box" id="memoryLog"></div>
+  </aside>
+</main>
+
+<div class="modal" id="settingsModal">
+  <div class="modal-box">
+    <h2>⚙ API 设置</h2>
+    <div class="mode" id="modeBadge">检测中…</div>
+    <div class="field">
+      <label>服务商</label>
+      <select id="providerSelect">
+        <option value="deepseek">DeepSeek（推荐，国内直连稳定）</option>
+        <option value="minimax">MiniMax</option>
+        <option value="openai">OpenAI</option>
+        <option value="zhipu">智谱 AI</option>
+        <option value="qwen">通义千问</option>
+        <option value="anthropic">Anthropic</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>模型</label>
+      <select id="modelSelect"></select>
+    </div>
+    <div class="field">
+      <label id="keyLabel">API Key（仅存本机 localStorage，不会上传）</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-…">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="settingsClose">取消</button>
+      <button class="send" id="saveCfgBtn">保存并测试</button>
+    </div>
+    <div id="settingsStatus"></div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/prompt.js"></script>
+<script src="js/app.js"></script>
+<script src="js/skin.js"></script>
+</body>
+</html>

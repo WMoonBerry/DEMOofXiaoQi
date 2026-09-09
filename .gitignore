@@ -1,0 +1,15 @@
+# Netlify
+.netlify/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 密钥 / 环境变量（Key 走 Netlify 环境变量，绝不入库）
+.env
+.env.*
+*.pem
+
+# Node
+node_modules/
+npm-debug.log*
